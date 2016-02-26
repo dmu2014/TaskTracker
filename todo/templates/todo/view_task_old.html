@@ -1,5 +1,5 @@
 {% extends "todo/base.html" %}
-
+{% load url from future %}
 
 {% block title %}Task: {{ task.title }}{% endblock %}
 
@@ -83,16 +83,24 @@
         <hr />
 
 
-       <hr>
-{% for comment in Item.Comment.all %}
-    <div class="comment">
-        <div class="date">{{ comment.created_date }}</div>
-        <strong>{{ comment.author }}</strong>
-        <p>{{ comment.text|linebreaks }}</p>
-    </div>
-{% empty %}
-    <p>No comments here yet :(</p>
-{% endfor %}
+        <h3>Add comment</h3>
+
+            <textarea name="comment-body"></textarea>
+            <p><input class="todo-button"type="submit" value="Submit"></p>
+
+        </form>
+
+        <h3>Comments on this task</h3>
+
+        <div class="task_comments">
+        {% for comment in comment_list %}
+            <p><strong>{{ comment.author.first_name }} {{ comment.author.last_name }}, {{ comment.date|date:"F d Y P" }}</strong> </p>
+            {{ comment.body|safe|urlize|linebreaks }}
+        {% empty %}
+        <p>No Comments</p>
+        {% endfor %}
+        </div>
+
     {% endifequal %}
 
 {% endblock %}

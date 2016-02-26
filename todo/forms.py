@@ -1,47 +1,66 @@
 from django import forms
 from django.forms import ModelForm
 from django.contrib.auth.models import User, Group
-from todo.models import Item, List
+from todo.models import Item, Comment
+from functools import partial
+from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
+DateInput = partial(forms.DateInput, {'class': 'datepicker'})
 
-
-class AddListForm(ModelForm):
-    # The picklist showing allowable groups to which a new list can be added
-    # determines which groups the user belongs to. This queries the form object
-    # to derive that list.
-    def __init__(self, user, *args, **kwargs):
-        super(AddListForm, self).__init__(*args, **kwargs)
-        self.fields['group'].queryset = Group.objects.filter(user=user)
-
-    class Meta:
-        model = List
-        exclude = []
+Project_Ids = (  
+    ('wcc-sw-nfa', 'wcc-sw-nfa'),
+    ('wcc-sw-wiced-stack', 'wcc-sw-wiced-stack')    
+)
 
 
 class AddItemForm(ModelForm):
+   
     # The picklist showing the users to which a new task can be assigned
     # must find other members of the groups the current list belongs to.
-    def __init__(self, task_list, *args, **kwargs):
-        super(AddItemForm, self).__init__(*args, **kwargs)
-        # print dir(self.fields['list'])
-        # print self.fields['list'].initial
-        self.fields['assigned_to'].queryset = User.objects.filter(groups__in=[task_list.group])
-        self.fields['assigned_to'].label_from_instance = \
-            lambda obj: "%s (%s)" % (obj.get_full_name(), obj.username)
+    #def save(self):
+        # If Item is being marked complete, set the completed_date
+        #if self.completed:
+        #    self.completed_date = datetime.datetime.now()
+    #    super(Item, self).save()
+    #def __init__(self, *args, **kwargs):
+    #    super(AddItemForm, self).__init__(*args, **kwargs)
+    #    self.fields['subcategory_Id'] = forms.ChoiceField(choices=get_subcategory_choices() )
+    #due_date = forms.DateField(
+    #   required=False,
+    #    widget=forms.DateTimeInput(attrs={'class': 'due_date_picker'})
+    #)
 
-    due_date = forms.DateField(
-        required=False,
-        widget=forms.DateTimeInput(attrs={'class': 'due_date_picker'})
-    )
+    #title = forms.CharField(
+    #    widget=forms.widgets.TextInput(attrs={'size': 35})
+    #)
 
-    title = forms.CharField(
-        widget=forms.widgets.TextInput(attrs={'size': 35})
-    )
+    #note = forms.CharField(widget=forms.Textarea(), required=False)
 
-    note = forms.CharField(widget=forms.Textarea(), required=False)
+    #Project_Id = forms.CharField(max_length=50, choices=Project_Ids)
+    
 
+
+
+
+    
     class Meta:
         model = Item
+        widgets = {
+            'due_date': forms.DateInput(attrs={'class':'datepicker'}),
+            'completed_date': forms.DateInput(attrs={'class':'datepicker'}),
+            'note': SummernoteWidget(),
+            #'note': SummernoteInplaceWidget(),
+        }
         exclude = []
+
+class CommentForm(ModelForm):
+
+    class Meta:
+        model = Comment
+        widgets = {
+            'text': SummernoteWidget(),
+            #'note': SummernoteInplaceWidget(),
+        }
+        fields = ('text','red_flag')
 
 
 class EditItemForm(ModelForm):
