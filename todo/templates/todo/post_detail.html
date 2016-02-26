@@ -1,0 +1,125 @@
+{% load staticfiles %}
+
+<html>
+    <head>
+		<title>Broadcom Status Reporting</title>
+		<link rel="stylesheet" type="text/css" href="/static/todo/css/styles.css" />
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link href="http://fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+				
+    </head>
+	<style>
+	h1{
+	background-color: #ffe6ff;
+}
+body 
+{
+ margin-top:10px;
+ margin-left:30px;
+ margin-right:800px;
+
+}
+	table, th, td, tr {
+	border: 1px solid black;
+}
+table { 
+	width: 800px;
+    border-spacing: 0px;
+    border-collapse: separate;
+	border-radius: 5px;
+}
+ td { 
+    padding: 5px;
+}
+.headcol{
+font-weight:bold;
+}
+.btns{
+padding: 20px;
+}
+
+
+[id=nflag]{
+color: black;
+
+}
+[id=flag]{
+color: red;
+
+}
+div.comment-field {
+
+	width: 800px;
+	border: 1px solid black;
+	color: 	red ;
+	border-radius: 5px;
+    border: 1px solid
+	border-color: 	black ;
+}
+div.comment-fieldf {
+
+	width: 800px;
+	border: 1px solid black;
+	color:black;
+	border-radius: 5px;
+    border: 1px solid
+}
+
+	
+	</style>
+	
+    <body>
+	<div class="page-header">
+	<img src="/static/todo/css/logo.png" alt="Broadcom Logo" style="width:200px;height:45px;">
+	
+        {% if user.is_authenticated %}
+		<p align="right" class="top-menu">  Hello {{ user.username }}(<a href="{% url 'django.contrib.auth.views.logout' %}">Log out</a>)</p>
+    {% else %}
+    <a href="{% url 'django.contrib.auth.views.login' %}" class="top-menu"><span class="glyphicon glyphicon-lock"></span></a>
+    {% endif %}	
+            <h1>Task Details <a class="btn btn-default" href="{% url 'post_edit' pk=post.pk %}"><span class="glyphicon glyphicon-pencil"></span></a><a class="btn btn-default" href="{% url 'post_remove' pk=post.pk %}"><span class="glyphicon glyphicon-remove"></span></a></h1>
+			
+        </div>
+		
+		<table >
+		
+    <tr><td class="headcol">Task Id:</td><td class="long">{{ post.id }}</td>
+    <tr><td class="headcol">Project Id:</td><td class="long">{{ post.Project_Id }}</td></tr>
+    <tr><td class="headcol">Subcategory Id:</td><td class="long">{{ post.subcategory_Id }}</td></tr>
+    <tr><td class="headcol">Owner:</td><td class="long">{{ post.assigned_to }}</td></tr>
+    <tr><td class="headcol">Created By:</td><td class="long">{{ post.created_by }}</td></tr>
+    <tr><td class="headcol">Created Date:</td><td class="long">{{ post.created_date }}</td></tr>
+    <tr><td class="headcol">Due Date:</td><td class="long">{{ post.due_date }}</td></tr>
+    <tr><td class="headcol">State:</td><td class="long">{{ post.State }}</td></tr>
+    <tr><td class="headcol">Note:</td><td class="long">{{ post.note | safe }} </td></tr>
+	<tr><td class="headcol">Priority:</td><td class="long">{{ post.priority }}</td></tr>
+</table>
+<div class ="btns">
+<a class="btn btn-default" href="{% url 'post_list' %}">Go back to Master Task List</a> 
+		</div>
+		<hr>
+			
+		<h1>Status Updates on this Task <a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Add Status Update</a></h1>
+{% for comment in post.comments.all%}
+    
+	
+        <div class="date"><strong>{{ comment.date }} </strong></div>
+        <strong>{{ comment.author }}  <a class="btn btn-default" href="{% url 'comment_edit' pk=comment.pk %}"><span class="glyphicon glyphicon-pencil"></span></a></strong>
+        
+		{% if comment.red_flag == True %}
+		<div class="comment-field">
+		<p>{{ comment.text|safe }}</p>
+		</div>
+		{% else %}
+		 <div class="comment-fieldf">
+		 <p>{{ comment.text|safe }}</p>
+		{% endif %}
+		</div>
+		<hr>
+{% empty %}
+    <p>No updates here yet!</p>
+{% endfor %}
+
+    </body>
+</html>

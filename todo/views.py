@@ -1,6 +1,6 @@
-from django.shortcuts import render_to_response
-from todo.models import Item, List, Comment
-from todo.forms import AddListForm, AddItemForm, EditItemForm, AddExternalItemForm, SearchForm
+from django.shortcuts import render_to_response, render
+from todo.models import Item, Comment
+from todo.forms import AddItemForm, CommentForm, EditItemForm, AddExternalItemForm, SearchForm
 from todo import settings
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
@@ -11,18 +11,112 @@ from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import Q
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-
-
+from django.utils import timezone
+from django.shortcuts import redirect
 import datetime
 
 # Need for links in email templates
 current_site = Site.objects.get_current()
 
+@login_required
+def post_list(request):
+    title = Item.objects.order_by('id')
+    return render(request, 'todo/post_list.html', {'title': title})
+
+def post_detail(request, pk):
+    post = get_object_or_404(Item, pk=pk)
+    return render(request, 'todo/post_detail.html', {'post': post})
+
+def post_new(request):
+    if request.method == "POST":
+        form = AddItemForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            #post = form.save()
+            #post.pk = str(int(post.pk) + 1)
+            post.created_date = timezone.now()
+            post.save()
+            return redirect('post_detail', pk=post.pk)
+    else:
+        form = AddItemForm()
+        #post = form.save(commit=False)
+        #post = form.save()
+        #post.pk = str(int(post.pk) + 1)
+    return render(request, 'todo/post_edit.html', {'form': form})
+
+def post_edit(request,pk):
+    post = get_object_or_404(Item, pk=pk)
+    #projectID = get_object_or_404(Project, pk=pk)
+    if request.method == "POST":
+        form = AddItemForm(request.POST, instance=post)
+        if form.is_valid():
+            post = form.save(commit=False)
+            #item.author = request.user
+            post.created_date = timezone.now()
+            post.save()
+            return redirect('post_detail', pk=post.pk)
+    else:
+        form = AddItemForm(instance=post)
+    return render(request, 'todo/post_edit.html', {'form': form})
+
+
+
+def post_remove(request, pk):
+    post = get_object_or_404(Item, pk=pk)
+    post.delete()
+    return redirect('todo.views.post_list')
+
+def add_comment_to_post(request, pk):
+    post = get_object_or_404(Item, pk=pk)
+    #del_comment = get_object_or_404(Comment, pk=pk)
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.item = post
+            comment.author = str(request.user)
+            #post.comments = comment
+            comment.save()
+            #post.save()
+            return redirect('todo.views.post_detail', pk=post.pk)
+    else:
+        form = CommentForm()
+    return render(request, 'todo/add_comment_to_post.html', {'form': form})
+
+def comment_edit(request,pk):
+    #post = get_object_or_404(Item, pk=pk)
+    del_comment = get_object_or_404(Comment, pk=pk)
+    #post_pk = del_comment.item.pk
+    #del_comment.delete()
+    if request.method == "POST":
+        form = CommentForm(request.POST, instance=del_comment)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            #comment.item = post
+            #post.comments = comment
+            comment.author = str(request.user)
+            comment.date = datetime.datetime.now()
+            post_pk = comment.item.pk
+            comment.save()
+            
+            #post.save()
+            return redirect('todo.views.post_detail', post_pk)
+    else:
+        form = CommentForm(instance=del_comment)
+    #del_comment.delete()
+    return render(request, 'todo/add_comment_to_post.html', {'form': form})
+
+def comment_remove(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    post_pk = comment.item.pk
+    comment.delete()
+    return redirect('todo.views.post_detail', pk=post_pk)
 
 def check_user_allowed(user):
     """
@@ -32,194 +126,6 @@ def check_user_allowed(user):
         return user.is_authenticated() and user.is_staff
     else:
         return user.is_authenticated()
-
-
-@user_passes_test(check_user_allowed)
-def list_lists(request):
-    """
-    Homepage view - list of lists a user can view, and ability to add a list.
-    """
-    thedate = datetime.datetime.now()
-    searchform = SearchForm(auto_id=False)
-
-    # Make sure user belongs to at least one group.
-    group_count = request.user.groups.all().count()
-    if group_count == 0:
-        messages.error(request, "You do not yet belong to any groups. Ask your administrator to add you to one.")
-
-        # Only show lists to the user that belong to groups they are members of.
-    # Superusers see all lists
-    if request.user.is_superuser:
-        list_list = List.objects.all().order_by('group', 'name')
-    else:
-        list_list = List.objects.filter(group__in=request.user.groups.all).order_by('group', 'name')
-
-    # Count everything
-    list_count = list_list.count()
-
-    # Note admin users see all lists, so count shouldn't filter by just lists the admin belongs to
-    if request.user.is_superuser:
-        item_count = Item.objects.filter(completed=0).count()
-    else:
-        item_count = Item.objects.filter(completed=0).filter(list__group__in=request.user.groups.all()).count()
-
-    return render_to_response('todo/list_lists.html', locals(), context_instance=RequestContext(request))
-
-
-@user_passes_test(check_user_allowed)
-def del_list(request, list_id, list_slug):
-    """
-    Delete an entire list. Danger Will Robinson! Only staff members should be allowed to access this view.
-    """
-    if request.user.is_staff:
-        can_del = 1
-
-    # Get this list's object (to derive list.name, list.id, etc.)
-    list = get_object_or_404(List, slug=list_slug)
-
-    # If delete confirmation is in the POST, delete all items in the list, then kill the list itself
-    if request.method == 'POST':
-        # Can the items
-        del_items = Item.objects.filter(list=list.id)
-        for del_item in del_items:
-            del_item.delete()
-
-        # Kill the list
-        del_list = List.objects.get(id=list.id)
-        del_list.delete()
-
-        # A var to send to the template so we can show the right thing
-        list_killed = 1
-    else:
-        item_count_done = Item.objects.filter(list=list.id, completed=1).count()
-        item_count_undone = Item.objects.filter(list=list.id, completed=0).count()
-        item_count_total = Item.objects.filter(list=list.id).count()
-
-    return render_to_response('todo/del_list.html', locals(), context_instance=RequestContext(request))
-
-
-@user_passes_test(check_user_allowed)
-def view_list(request, list_id=0, list_slug=None, view_completed=0):
-    """
-    Display and manage items in a task list
-    """
-    # Make sure the accessing user has permission to view this list.
-    # Always authorize the "mine" view. Admins can view/edit all lists.
-
-    if list_slug == "mine" or list_slug == "recent-add" or list_slug == "recent-complete":
-        auth_ok = 1
-    else:
-        list = get_object_or_404(List, slug=list_slug)
-        listid = list.id
-
-        # Check whether current user is a member of the group this list belongs to.
-        if list.group in request.user.groups.all() or request.user.is_staff or list_slug == "mine":
-            auth_ok = 1  # User is authorized for this view
-        else:  # User does not belong to the group this list is attached to
-            messages.error(request, "You do not have permission to view/edit this list.")
-
-            # First check for items in the mark_done POST array. If present, change
-    # their status to complete.
-    if request.POST.getlist('mark_done'):
-        done_items = request.POST.getlist('mark_done')
-        # Iterate through array of done items and update its representation in the model
-        for thisitem in done_items:
-            p = Item.objects.get(id=thisitem)
-            p.completed = 1
-            p.completed_date = datetime.datetime.now()
-            p.save()
-            messages.success(request, "Item \"%s\" marked complete." % p.title)
-
-            # Undo: Set completed items back to incomplete
-    if request.POST.getlist('undo_completed_task'):
-        undone_items = request.POST.getlist('undo_completed_task')
-        for thisitem in undone_items:
-            p = Item.objects.get(id=thisitem)
-            p.completed = 0
-            p.save()
-            messages.success(request, "Previously completed task \"%s\" marked incomplete." % p.title)
-
-    # And delete any requested items
-    if request.POST.getlist('del_task'):
-        deleted_items = request.POST.getlist('del_task')
-        for thisitem in deleted_items:
-            p = Item.objects.get(id=thisitem)
-            p.delete()
-            messages.success(request, "Item \"%s\" deleted." % p.title)
-
-            # And delete any *already completed* items
-    if request.POST.getlist('del_completed_task'):
-        deleted_items = request.POST.getlist('del_completed_task')
-        for thisitem in deleted_items:
-            p = Item.objects.get(id=thisitem)
-            p.delete()
-            messages.success(request, "Deleted previously completed item \"%s\"." % p.title)
-
-    thedate = datetime.datetime.now()
-    created_date = "%s-%s-%s" % (thedate.year, thedate.month, thedate.day)
-
-    # Get list of items with this list ID, or filter on items assigned to me, or recently added/completed
-    if list_slug == "mine":
-        task_list = Item.objects.filter(assigned_to=request.user, completed=0)
-        completed_list = Item.objects.filter(assigned_to=request.user, completed=1)
-
-    elif list_slug == "recent-add":
-        # We'll assume this only includes uncompleted items to avoid confusion.
-        # Only show items in lists that are in groups that the current user is also in.
-        task_list = Item.objects.filter(list__group__in=(request.user.groups.all()),
-                                        completed=0).order_by('-created_date')[:50]
-        # completed_list = Item.objects.filter(assigned_to=request.user, completed=1)
-
-    elif list_slug == "recent-complete":
-        # Only show items in lists that are in groups that the current user is also in.
-        task_list = Item.objects.filter(list__group__in=request.user.groups.all(),
-                                        completed=1).order_by('-completed_date')[:50]
-        # completed_list = Item.objects.filter(assigned_to=request.user, completed=1)
-
-    else:
-        task_list = Item.objects.filter(list=list.id, completed=0)
-        completed_list = Item.objects.filter(list=list.id, completed=1)
-
-    if request.POST.getlist('add_task'):
-        form = AddItemForm(list, request.POST, initial={
-            'assigned_to': request.user.id,
-            'priority': 999,
-        })
-
-        if form.is_valid():
-            # Save task first so we have a db object to play with
-            new_task = form.save()
-
-            # Send email alert only if the Notify checkbox is checked AND the assignee is not the same as the submittor
-            # Email subect and body format are handled by templates
-            if "notify" in request.POST:
-                if new_task.assigned_to != request.user:
-
-                    # Send email
-                    email_subject = render_to_string("todo/email/assigned_subject.txt", {'task': new_task})
-                    email_body = render_to_string("todo/email/assigned_body.txt",
-                                                  {'task': new_task, 'site': current_site, })
-                    try:
-                        send_mail(email_subject, email_body, new_task.created_by.email, [new_task.assigned_to.email],
-                                  fail_silently=False)
-                    except:
-                        messages.error(request, "Task saved but mail not sent. Contact your administrator.")
-
-            messages.success(request, "New task \"%s\" has been added." % new_task.title)
-
-            return HttpResponseRedirect(request.path)
-    else:
-        # We don't allow adding a task on the "mine" view
-        if list_slug != "mine" and list_slug != "recent-add" and list_slug != "recent-complete":
-            form = AddItemForm(list, initial={
-                'assigned_to': request.user.id,
-                'priority': 999,
-            })
-
-    if request.user.is_staff:
-        can_del = 1
-
-    return render_to_response('todo/view_list.html', locals(), context_instance=RequestContext(request))
 
 
 @user_passes_test(check_user_allowed)
@@ -349,31 +255,6 @@ def external_add(request):
         form = AddExternalItemForm()
 
     return render_to_response('todo/add_external_task.html', locals(), context_instance=RequestContext(request))
-
-
-@user_passes_test(check_user_allowed)
-def add_list(request):
-    """
-    Allow users to add a new todo list to the group they're in.
-    """
-    if request.POST:
-        form = AddListForm(request.user, request.POST)
-        if form.is_valid():
-            try:
-                form.save()
-                messages.success(request, "A new list has been added.")
-                return HttpResponseRedirect(request.path)
-            except IntegrityError:
-                messages.error(request,
-                               "There was a problem saving the new list. "
-                               "Most likely a list with the same name in the same group already exists.")
-    else:
-        if request.user.groups.all().count() == 1:
-            form = AddListForm(request.user, initial={"group": request.user.groups.all()[0]})
-        else:
-            form = AddListForm(request.user)
-
-    return render_to_response('todo/add_list.html', locals(), context_instance=RequestContext(request))
 
 
 @user_passes_test(check_user_allowed)
