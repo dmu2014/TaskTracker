@@ -61,11 +61,7 @@ SITE_ID = 1
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-<<<<<<< HEAD
-        #'DIRS': [],
-        'DIRS': [os.path.join(BASE_DIR, 'todo/templates')],
-        
-=======
+
 
         #'DIRS': ['/home/Dishank/testapp/todo/templates'],
 
@@ -75,7 +71,7 @@ TEMPLATES = [
 
 
 
->>>>>>> 5bbff16224b044255336eb8d07770a9759b8918a
+
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
