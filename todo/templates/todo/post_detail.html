@@ -78,7 +78,6 @@ div.comment-fieldf {
     {% else %}
     <a href="{% url 'django.contrib.auth.views.login' %}" class="top-menu"><span class="glyphicon glyphicon-lock"></span></a>
     {% endif %}	
-
             <h1>Task Details <a class="btn btn-default" href="{% url 'post_edit' pk=post.pk %}"><span class="glyphicon glyphicon-pencil"></span></a><a class="btn btn-default" href="{% url 'post_remove' pk=post.pk %}"><span class="glyphicon glyphicon-remove"></span></a><a class="btn btn-default" href="{% url 'postchild_new' pk=post.id %}">New Child Task <span class="glyphicon glyphicon-plus"></span></a><a class="btn btn-default" href="{% url 'post_list' %}">Master Task List</a>{% if post.hasparent == True %}<a class="btn btn-default" href="{% url 'post_detail' pk=post.parentId %}">Parent Task </a>{% endif %}{% if post.haschildren == True %}<a class="btn btn-default" href="{% url 'postchild_list' parentId=post.id %}">Child Tasks</a> {% endif %}</h1>
 			
         </div>
@@ -88,9 +87,7 @@ div.comment-fieldf {
     <tr><td class="headcol">Task Id:</td><td class="long">{{ post.id }}</td>
     <tr><td class="headcol">Project Id:</td><td class="long">{{ post.Project_Id }}</td></tr>
     <tr><td class="headcol">Subcategory Id:</td><td class="long">{{ post.subcategory_Id }}</td></tr>
-
 	<tr><td class="headcol">Title:</td><td class="long">{{ post.title }}</td></tr>
-
     <tr><td class="headcol">Owner:</td><td class="long">{{ post.assigned_to }}</td></tr>
     <tr><td class="headcol">Created By:</td><td class="long">{{ post.created_by }}</td></tr>
     <tr><td class="headcol">Created Date:</td><td class="long">{{ post.created_date }}</td></tr>
@@ -100,12 +97,10 @@ div.comment-fieldf {
 	<tr><td class="headcol">Priority:</td><td class="long">{{ post.priority }}</td></tr>
 </table>
 
-
 		<hr>
 		
 
 		
-
 
 		<h1>Status Updates on this Task <a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Add Status Update</a></h1>
 {% for comment in post.comments.all%}
