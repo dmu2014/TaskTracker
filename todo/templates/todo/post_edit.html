@@ -1,0 +1,92 @@
+  
+<html>
+    <head>
+		<title>Broadcom Status Reporting</title>
+		<link rel="stylesheet" type="text/css" href="static/css/styles.css" />
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link href="http://fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+		<script type="text/javascript" src="static/js/jquery-ui.js"></script>
+		<script type="text/javascript" src="static/js/jquery-ui.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="static/css/jquery-ui.css" media="all" />
+		<link rel="stylesheet" type="text/css" href="static/css/ui-datepicker.css" media="all" />
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css"> 
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+<script>
+$(document).ready(function() {
+    $('.datepicker').datepicker();
+});
+</script>
+    </head>
+<style>
+
+	h1{
+	background-color: #ffe6ff;
+}
+body 
+{
+ margin-top:30px;
+ margin-left:100px;
+ margin-right:700px;
+ margin-bottom:200px;
+
+
+}
+div{
+ border-radius: 5px;
+    border: 1px solid;
+	border-color: 	black ;
+	padding: 25px;
+
+}
+#id_note {
+    width: 800px;
+    height: 100px;
+}
+
+#id_title {
+    width: 800px;
+    height: 25px;
+}
+#id_due_date {
+    width: 100px;
+    height: 25px;
+}
+#id_completed_date {
+    width: 100px;
+    height: 25px;
+}
+
+
+</style>
+
+<body>
+        	
+	<div >
+	<img src="/static/todo/css/logo.png" alt="Broadcom Logo" style="width:200px;height:45px;">
+	{% if user.is_authenticated %}
+		<p align="right" class="top-menu">  Hello {{ user.username }}(<a href="{% url 'django.contrib.auth.views.logout' %}">Log out</a>)</p>
+    {% else %}
+    <a href="{% url 'django.contrib.auth.views.login' %}" class="top-menu"><span class="glyphicon glyphicon-lock"></span></a>
+    {% endif %}	
+		<h1>Edit Task</h1>
+		 
+ <script type="text/javascript">
+    $(document).ready(function() {
+        // Initially hide the TaskEdit form
+        $('#TaskEdit').hide();
+
+        // toggle slide to show the Add Task form when link clicked
+        $('#slideToggle').click(function(){
+            $(this).siblings('#TaskEdit').slideToggle();
+        });
+    });
+    </script>
+
+		<form method="POST" class="post-form">{% csrf_token %} {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Save</button>
+    </form>
+	</div>
+	</body>
+</html>

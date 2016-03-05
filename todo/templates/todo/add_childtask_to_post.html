@@ -1,0 +1,66 @@
+
+{% load staticfiles %}
+
+<html>
+    <head>
+		<title>Broadcom Status Reporting</title>
+		<link rel="stylesheet" type="text/css" href="static/css/styles.css" />
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link href="http://fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+				
+    </head>
+    <script>
+$(document).ready(function() {
+    $('.datepicker').datepicker();
+});
+</script>
+
+	<style>
+	
+	h1{
+	background-color: #ffe6ff;
+}
+body 
+{
+ margin-top:50px;
+ margin-left:100px;
+ margin-right:700px;
+ margin-bottom:200px;
+
+
+}
+
+div{
+ border-radius: 5px;
+    border: 1px solid;
+	border-color: 	black ;
+	padding: 25px;
+
+}
+#id_text {
+    width: 800px;
+    height: 100px;
+}
+
+	
+	
+	</style>
+	
+	<body>
+	<div>
+	<img src="/static/todo/css/logo.png" alt="Broadcom Logo" style="width:200px;height:45px;">
+	{% if user.is_authenticated %}
+		<p align="right" class="top-menu">  Hello {{ user.username }}(<a href="{% url 'django.contrib.auth.views.logout' %}">Log out</a>)</p>
+    {% else %}
+    <a href="{% url 'django.contrib.auth.views.login' %}" class="top-menu"><span class="glyphicon glyphicon-lock"></span></a>
+    {% endif %}	
+<h1>Add a ChildTask</h1>
+
+    <form method="POST" class="post-form">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Publish Status</button>
+    </form>
+	</div>
+	    </body>
+</html>
