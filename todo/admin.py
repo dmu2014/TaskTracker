@@ -1,8 +1,6 @@
 from django.contrib import admin
 from todo.models import Item, Comment
-
 #from todo.models import Item, Comment, Project, SubProject
-
 
 
 class ItemAdmin(admin.ModelAdmin):
@@ -11,7 +9,6 @@ class ItemAdmin(admin.ModelAdmin):
     #list_filter = ('list',)
     ordering = ('priority',)
     search_fields = ('title','note')
-
 
 
 #class ProjectsAdmin(admin.ModelAdmin):
@@ -26,16 +23,13 @@ class ItemAdmin(admin.ModelAdmin):
     
 
 
-
 #class CommentAdmin(admin.ModelAdmin):
 #    list_display = ('author', 'date', 'snippet')
 
 
 #admin.site.register(List)
-
 #admin.site.register(Comment, CommentAdmin)
 #admin.site.register(Project, ProjectsAdmin)
 #admin.site.register(SubProject, SubProjectsAdmin)
-
 admin.site.register(Comment)
 admin.site.register(Item, ItemAdmin)
