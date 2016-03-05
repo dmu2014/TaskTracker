@@ -32,24 +32,19 @@ def post_list(request):
 
 def postchild_list(request, parentId):
     post = Item.objects.order_by('id')
-    title = Item.objects.filter(parentId__contains = parentId) 
+    title = Item.objects.filter(parentId__contains = parentId)
     return render(request, 'todo/postchild_list.html', {'title': title, 'post': post})
 
 def my_tasks(request):
     post = Item.objects.order_by('id')
-    
-    title = Item.objects.filter(assigned_to = request.user) 
+
+    title = Item.objects.filter(assigned_to = request.user)
     return render(request, 'todo/postmy_list.html', {'title': title, 'post': post})
 
 def post_detail(request, pk):
     title = Item.objects.order_by('id')
     post = get_object_or_404(Item, pk=pk)
     return render(request, 'todo/post_detail.html', {'post': post, 'title':title})
-
-def post_detail(request, pk):
-    post = get_object_or_404(Item, pk=pk)
-    return render(request, 'todo/post_detail.html', {'post': post})
-
 
 def post_new(request):
     if request.method == "POST":
@@ -123,7 +118,7 @@ def comment_edit(request,pk):
             comment.date = datetime.datetime.now()
             post_pk = comment.item.pk
             comment.save()
-            
+
             #post.save()
             return redirect('todo.views.post_detail', post_pk)
     else:
