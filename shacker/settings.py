@@ -61,9 +61,21 @@ SITE_ID = 1
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+<<<<<<< HEAD
         #'DIRS': [],
         'DIRS': [os.path.join(BASE_DIR, 'todo/templates')],
         
+=======
+
+        #'DIRS': ['/home/Dishank/testapp/todo/templates'],
+
+
+        #'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'todo/templates')],
+
+
+
+>>>>>>> 5bbff16224b044255336eb8d07770a9759b8918a
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -127,4 +139,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+
 LOGIN_REDIRECT_URL = '/'
+
+
+
