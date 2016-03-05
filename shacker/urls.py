@@ -19,9 +19,11 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+
     url(r'^summernote/', include('django_summernote.urls')),
     url(r'^chaining/', include('smart_selects.urls')),
     #url(r'^todo/', include('todo.urls')),
+
     url(r'^todo/', include('todo.urls')),
     url(r'', include('todo.urls')),
     url(r'^accounts/login/$', 'django.contrib.auth.views.login'),

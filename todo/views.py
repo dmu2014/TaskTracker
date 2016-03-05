@@ -29,6 +29,7 @@ def post_list(request):
     title = Item.objects.order_by('id')
     return render(request, 'todo/post_list.html', {'title': title})
 
+
 def postchild_list(request, parentId):
     post = Item.objects.order_by('id')
     title = Item.objects.filter(parentId__contains = parentId) 
@@ -45,10 +46,10 @@ def post_detail(request, pk):
     post = get_object_or_404(Item, pk=pk)
     return render(request, 'todo/post_detail.html', {'post': post, 'title':title})
 
-def childtask_detail(request, cpk, pk):
-    childtask = get_object_or_404(ChildTask, pk=cpk)
+def post_detail(request, pk):
     post = get_object_or_404(Item, pk=pk)
-    return render(request, 'todo/childtask_detail.html', {'post': post, 'childtask':childtask})
+    return render(request, 'todo/post_detail.html', {'post': post})
+
 
 def post_new(request):
     if request.method == "POST":
@@ -67,35 +68,6 @@ def post_new(request):
         #post.pk = str(int(post.pk) + 1)
     return render(request, 'todo/post_edit.html', {'form': form})
 
-def postchild_new(request, pk):
-    post = get_object_or_404(Item, pk=pk)
-    post.haschildren = True
-    post.save()
-    if request.method == "POST":
-        form = AddItemForm(request.POST)
-        
-        if form.is_valid():
-            
-            
-            
-            childpost = form.save(commit=False)
-            #post = form.save()
-            #post.pk = str(int(post.pk) + 1)
-            childpost.hasparent = True
-            
-            childpost.parentId = pk
-            childpost.created_date = timezone.now()
-            childpost.save()
-            
-            
-            return redirect('post_detail', pk=childpost.pk)
-    else:
-        form = AddItemForm()
-        
-        #post = form.save(commit=False)
-        #post = form.save()
-        #post.pk = str(int(post.pk) + 1)
-    return render(request, 'todo/post_edit.html', {'form': form})
 
 def post_edit(request,pk):
     post = get_object_or_404(Item, pk=pk)
@@ -111,6 +83,7 @@ def post_edit(request,pk):
     else:
         form = AddItemForm(instance=post)
     return render(request, 'todo/post_edit.html', {'form': form})
+
 
 
 def post_remove(request, pk):
@@ -164,11 +137,6 @@ def comment_remove(request, pk):
     comment.delete()
     return redirect('todo.views.post_detail', pk=post_pk)
 
-def childtask_remove(request, pk):
-    childtask = get_object_or_404(ChildTask, pk=pk)
-    post_pk = childtask.childtask.pk
-    childtask.delete()
-    return redirect('todo.views.post_detail', pk=post_pk)
 
 def check_user_allowed(user):
     """

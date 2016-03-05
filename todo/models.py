@@ -45,7 +45,9 @@ class Item(models.Model):
     subcategory_Id = models.CharField(max_length=140, choices=Subcategory_Ids, default="Add Sub Project ID here")
     #task_Id = models.IntegerField(default = id.value, null=False)
     assigned_to = models.CharField(max_length=50, null=False)
+
     title = models.CharField(max_length=140,null=False, blank=True, default=(""))
+
     #list = models.ForeignKey(List)
     created_date = models.DateField(auto_now=True)
     assigned_to = models.ForeignKey(User, related_name='todo_assigned_to')
@@ -60,6 +62,7 @@ class Item(models.Model):
     #Status = models.CharField(max_length=140, null=True)
     #time_allocated = models.CharField(max_length=140, null=True)
     priority = models.CharField(max_length=6, choices=PRIORITIES, default=("Normal"))
+
     hasparent = models.NullBooleanField()
     haschildren = models.NullBooleanField()
     parentId = models.IntegerField(default=0)
@@ -90,8 +93,6 @@ class Item(models.Model):
     class Meta:
         ordering = ["priority"]
 
-
-        
 
 @python_2_unicode_compatible
 class Comment(models.Model):

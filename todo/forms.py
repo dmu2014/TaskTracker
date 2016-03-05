@@ -16,6 +16,7 @@ class AddItemForm(ModelForm):
    
     # The picklist showing the users to which a new task can be assigned
     # must find other members of the groups the current list belongs to.
+
     def save_hasparent(self):
         # If Item is being marked complete, set the completed_date
         #if self.completed:
@@ -24,6 +25,7 @@ class AddItemForm(ModelForm):
     #def __init__(self, *args, **kwargs):
     #    super(AddItemForm, self).__init__(*args, **kwargs)
     #    self.fields['haschildren'] = forms.ChoiceField(choices=get_subcategory_choices() )
+
     #due_date = forms.DateField(
     #   required=False,
     #    widget=forms.DateTimeInput(attrs={'class': 'due_date_picker'})
@@ -50,7 +52,9 @@ class AddItemForm(ModelForm):
             'note': SummernoteWidget(),
             #'note': SummernoteInplaceWidget(),
         }
+
         exclude = ['hasparent','haschildren','parentId']
+
 
 class CommentForm(ModelForm):
 
@@ -62,7 +66,6 @@ class CommentForm(ModelForm):
         }
         fields = ('text','red_flag')
 
-      
 
 
 class EditItemForm(ModelForm):
